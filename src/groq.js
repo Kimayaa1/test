@@ -1,7 +1,12 @@
 import { Groq } from 'groq-sdk';
 
+<<<<<<< HEAD
 const groqinstance = new Groq({
     apiKey: "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", dangerouslyAllowBrowser: true 
+=======
+const groqinstance = new groq({
+    apiKey: "API_key"
+>>>>>>> d5c3fa99e85648f7b315f047dcb5269d7e2da886
 });
 
 export async function sendMessageToGroq(message) {
