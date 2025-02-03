@@ -10,16 +10,54 @@ import sendBtn from './assets/send.svg';
 import user from './assets/user.png';
 import logo from './assets/vichaar logo.png';
 import { sendMessageToGroq } from './groq';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 
 function App() {
 
+  const msgEnd = useRef(null);
+
   const [input, setInput] = useState("");
+  const[messages, setMessages ] = useState([
+    {
+      text: "Welcome to Vichaar!",
+      isBot: true,
+    }
+  ]);
+
+  useEffect(()=>{
+    msgEnd.current.scrollIntoView();
+  }, [messages]);
 
   const handleSend = async () => {
-    const res = await sendMessageToGroq(input)
-    console.log(res)
+    const text = input;
+    setInput('');
+    setMessages([
+      ...messages,
+      {text, isBot:false}
+    ])
+    const res = await sendMessageToGroq(text)
+    setMessages([...messages,
+      {text, isBot: false },
+      {text: res, isBot: true}
+    ]);
+  }
+
+  const handleEnter = async (e) =>{
+    if(e.key === 'Enter') await handleSend();
+  }
+
+  const handleQuery = async (e) =>{
+    const text = e.target.value;
+    setMessages([
+      ...messages,
+      {text, isBot:false}
+    ])
+    const res = await sendMessageToGroq(text)
+    setMessages([...messages,
+      {text, isBot: false },
+      {text: res, isBot: true}
+    ]);
   }
 
 
@@ -30,10 +68,10 @@ function App() {
           <div className="upperSideTop">
             <img src={vichaarLogo} alt="Logo" className="logo"/>
             <span className="brand">Vichaar</span></div>
-            <button className="midBtn"><img src={addBtn} alt="New Vichaar" className="addBtn"/>New Vichaar</button>
+            <button className="midBtn" onClick={()=>{window.location.reload()}}><img src={addBtn} alt="New Vichaar" className="addBtn"/>New Vichaar</button>
             <div className="upperSideBottom">
-              <button className="query"><img src={msgIcon} alt="Query" />What is Programming?</button>
-              <button className="query"><img src={msgIcon} alt="Query" />How to use an API?</button>
+              <button className="query" onClick={handleQuery} value={"What is Programming?"}><img src={msgIcon} alt="Query" />What is Programming?</button>
+              <button className="query" onClick={handleQuery} value={"How to use an API?"}><img src={msgIcon} alt="Query" />How to use an API?</button>
             </div>
           {/* </div>  */}
         </div>
@@ -45,16 +83,16 @@ function App() {
       </div>
       <div className="main">
         <div className="chats">
-          <div className="chat">
-            <img className="chatImg" src={user} alt=""/><p className="txt">eggcghfh hfbhbfxb fh rbhfhrf hfhhfn rrjfn</p>
-          </div>
-          <div className="chat bot">
-            <img className="chatImg" src={logo} alt=""/><p className="txt">eggcghfh hfbhbfxb fh rbhfhrf hfhhfn rrjfn</p>
-          </div>
+          {messages.map((message, i) =>
+            <div key={i} className={message.isBot?"chat bot":"chat"}>
+              <img className="chatImg" src={message.isBot?logo:user} alt=""/><p className="txt">{ message.text }</p>
+            </div>
+          )}
+          <div ref={msgEnd}/>
         </div>
         <div className="chatFooter">
           <div className="inp">
-            <input type="text" placeholder='Write your Vichaar...' value={input} onChange={(e)=>{setInput(e.target.value)}}/> <button className="send" onClick={handleSend}><img src={sendBtn} alt="send"/></button>
+            <input type="text" placeholder='Write your Vichaar...' value={input}onKeyDown={handleEnter} onChange={(e)=>{setInput(e.target.value)}}/> <button className="send" onClick={handleSend}><img src={sendBtn} alt="send"/></button>
           </div>
           <p>Vichaar may produce inaccurate information about people, places or facts. Vichaar 2025 version.</p>
         </div>
